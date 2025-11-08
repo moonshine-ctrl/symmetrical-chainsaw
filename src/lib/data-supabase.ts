@@ -74,7 +74,6 @@ export const getDepartments = async (): Promise<Department[]> => {
 
 export const departments: Promise<Department[]> = getDepartments()
 
-// ✅ Tambahan untuk kompatibilitas
 export const getDepartmentById = async (id: string): Promise<Department | undefined> => {
   const departments = await getDepartments()
   return departments.find(dep => dep.id === id)
@@ -97,7 +96,6 @@ export const getLeaveTypes = async (): Promise<LeaveType[]> => {
 
 export const leaveTypes: Promise<LeaveType[]> = getLeaveTypes()
 
-// ✅ Tambahan untuk kompatibilitas
 export const getLeaveTypeById = async (id: string): Promise<LeaveType | undefined> => {
   const leaveTypes = await getLeaveTypes()
   return leaveTypes.find(type => type.id === id)
@@ -178,6 +176,12 @@ export const getPendingApprovals = async (approverId: string): Promise<LeaveRequ
   }
 }
 
+// ✅ Tambahan agar build tidak error
+export const getLeaveRequestById = async (id: string): Promise<LeaveRequest | undefined> => {
+  const all = await getLeaveRequests()
+  return all.find(req => req.id === id)
+}
+
 // ==============================
 // 🔹 NOTIFICATIONS
 // ==============================
@@ -195,7 +199,6 @@ export const getNotificationsByUser = async (userId: string): Promise<Notificati
   return notificationsCache.filter(notif => notif.userId === userId)
 }
 
-// ✅ Tambahan untuk kompatibilitas
 export const notifications: Notification[] = []
 
 // ==============================
