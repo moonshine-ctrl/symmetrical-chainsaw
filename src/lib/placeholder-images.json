@@ -1,0 +1,58 @@
+{
+  "placeholderImages": [
+    {
+      "id": "user-1",
+      "description": "User avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1613145997970-db84a7975fbb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwcm9maWxlJTIwcGVyc29ufGVufDB8fHx8MTc2MjI2Mzg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile person"
+    },
+    {
+      "id": "user-2",
+      "description": "User avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1648218943004-5ec604ef627a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwcm9maWxlJTIwcGVyc29ufGVufDB8fHx8MTc2MjI2Mzg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile person"
+    },
+    {
+      "id": "user-3",
+      "description": "User avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1684070006672-09792c2ea5af?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwcm9maWxlJTIwcGVyc29ufGVufDB8fHx8MTc2MjI2Mzg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile person"
+    },
+    {
+      "id": "user-4",
+      "description": "User avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1539605480396-a61f99da1041?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwcm9maWxlJTIwcGVyc29ufGVufDB8fHx8MTc2MjI2Mzg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile person"
+    },
+    {
+      "id": "user-5",
+      "description": "User avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1657331017197-061601b1de71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwcm9maWxlJTIwcGVyc29ufGVufDB8fHx8MTc2MjI2Mzg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile person"
+    },
+    {
+      "id": "user-6",
+      "description": "User avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1724435811349-32d27f4d5806?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwcm9maWxlJTIwcGVyc29ufGVufDB8fHx8MTc2MjI2Mzg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile person"
+    },
+    {
+      "id": "user-7",
+      "description": "User avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1684070006672-09792c2ea5af?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwcm9maWxlJTIwcGVyc29ufGVufDB8fHx8MTc2MjI2Mzg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile person"
+    },
+    {
+      "id": "user-8",
+      "description": "User avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1648218943004-5ec604ef627a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwcm9maWxlJTIwcGVyc29ufGVufDB8fHx8MTc2MjI2Mzg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile person"
+    },
+    {
+      "id": "admin-avatar",
+      "description": "Admin avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1610014197264-b8c410ac3fe2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwcm9maWxlJTIwcGVyc29ufGVufDB8fHx8MTc2MjI2Mzg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile person"
+    }
+  ]
+}
