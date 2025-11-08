@@ -1,3 +1,5 @@
+// src/lib/data-supabase.ts
+
 import type { User, Department, LeaveType, LeaveRequest, Notification, LogEntry } from '@/types'
 import { 
   usersService, 
@@ -9,7 +11,9 @@ import {
   appSettingsService
 } from './supabase-service'
 
-// Data cache for better performance
+// ==============================
+// 🔹 DATA CACHE
+// ==============================
 let usersCache: User[] | null = null
 let departmentsCache: Department[] | null = null
 let leaveTypesCache: LeaveType[] | null = null
@@ -17,7 +21,6 @@ let leaveRequestsCache: LeaveRequest[] | null = null
 let notificationsCache: Notification[] | null = null
 let logEntriesCache: LogEntry[] | null = null
 
-// Cache invalidation helper
 const invalidateCache = () => {
   usersCache = null
   departmentsCache = null
@@ -27,7 +30,9 @@ const invalidateCache = () => {
   logEntriesCache = null
 }
 
-// USERS
+// ==============================
+// 🔹 USERS
+// ==============================
 export const getUsers = async (): Promise<User[]> => {
   if (!usersCache) {
     try {
@@ -40,7 +45,7 @@ export const getUsers = async (): Promise<User[]> => {
   return usersCache
 }
 
-export const users: Promise<User[]> = getUsers() // Keep for backward compatibility
+export const users: Promise<User[]> = getUsers()
 
 export const getUserById = async (id: string): Promise<User | undefined> => {
   const users = await getUsers()
@@ -52,7 +57,9 @@ export const getUserByNip = async (nip: string): Promise<User | undefined> => {
   return users.find(user => user.nip === nip)
 }
 
-// DEPARTMENTS
+// ==============================
+// 🔹 DEPARTMENTS
+// ==============================
 export const getDepartments = async (): Promise<Department[]> => {
   if (!departmentsCache) {
     try {
@@ -65,9 +72,11 @@ export const getDepartments = async (): Promise<Department[]> => {
   return departmentsCache
 }
 
-export const departments: Promise<Department[]> = getDepartments() // Keep for backward compatibility
+export const departments: Promise<Department[]> = getDepartments()
 
-// LEAVE TYPES
+// ==============================
+// 🔹 LEAVE TYPES
+// ==============================
 export const getLeaveTypes = async (): Promise<LeaveType[]> => {
   if (!leaveTypesCache) {
     try {
@@ -80,9 +89,11 @@ export const getLeaveTypes = async (): Promise<LeaveType[]> => {
   return leaveTypesCache
 }
 
-export const leaveTypes: Promise<LeaveType[]> = getLeaveTypes() // Keep for backward compatibility
+export const leaveTypes: Promise<LeaveType[]> = getLeaveTypes()
 
-// APP SETTINGS
+// ==============================
+// 🔹 APP SETTINGS
+// ==============================
 export const getAppSettings = async () => {
   try {
     return await appSettingsService.getSettings()
@@ -109,7 +120,20 @@ export const updateAppSettings = async (settings: any) => {
   }
 }
 
-// LEAVE REQUESTS
+// ✅ Fallback static settings (untuk kompatibilitas kode lama)
+export const settings = {
+  id: 'global',
+  logoUrl: '/logo.png',
+  companyName: 'Leave Management System',
+  letterhead: ['Company Name'],
+  sickLeaveFormUrl: '',
+  contactInfo: {},
+  themeConfig: {}
+}
+
+// ==============================
+// 🔹 LEAVE REQUESTS
+// ==============================
 export const getLeaveRequests = async (): Promise<LeaveRequest[]> => {
   if (!leaveRequestsCache) {
     try {
@@ -122,9 +146,11 @@ export const getLeaveRequests = async (): Promise<LeaveRequest[]> => {
   return leaveRequestsCache
 }
 
-export const leaveRequests: Promise<LeaveRequest[]> = getLeaveRequests() // Keep for backward compatibility
+export const leaveRequests: Promise<LeaveRequest[]> = getLeaveRequests()
 
-// NOTIFICATIONS
+// ==============================
+// 🔹 NOTIFICATIONS
+// ==============================
 export const getNotificationsByUser = async (userId: string): Promise<Notification[]> => {
   if (!notificationsCache) {
     try {
@@ -139,7 +165,9 @@ export const getNotificationsByUser = async (userId: string): Promise<Notificati
   return notificationsCache.filter(notif => notif.userId === userId)
 }
 
-// LOG ENTRIES
+// ==============================
+// 🔹 LOG ENTRIES
+// ==============================
 export const getLogEntries = async (): Promise<LogEntry[]> => {
   if (!logEntriesCache) {
     try {
@@ -152,7 +180,9 @@ export const getLogEntries = async (): Promise<LogEntry[]> => {
   return logEntriesCache
 }
 
-// Utility functions for easier data manipulation
+// ==============================
+// 🔹 UTILITY FUNCTIONS
+// ==============================
 export const getUsersByDepartment = async (departmentId: string): Promise<User[]> => {
   try {
     return await usersService.getByDepartment(departmentId)
@@ -189,18 +219,17 @@ export const getPendingApprovals = async (approverId: string): Promise<LeaveRequ
   }
 }
 
-// Data manipulation functions
+// ==============================
+// 🔹 DATA MANIPULATION
+// ==============================
 export const createLeaveRequest = async (request: Omit<LeaveRequest, 'id' | 'createdAt'>): Promise<LeaveRequest> => {
   try {
     const newRequest = await leaveRequestsService.create({
       ...request,
-      id: `req${Date.now()}`, // Generate ID
+      id: `req${Date.now()}`,
       createdAt: new Date()
     })
-    
-    // Invalidate cache
     leaveRequestsCache = null
-    
     return newRequest
   } catch (error) {
     console.error('Failed to create leave request:', error)
@@ -211,10 +240,7 @@ export const createLeaveRequest = async (request: Omit<LeaveRequest, 'id' | 'cre
 export const updateLeaveRequest = async (id: string, updates: Partial<LeaveRequest>): Promise<LeaveRequest> => {
   try {
     const updatedRequest = await leaveRequestsService.update(id, updates)
-    
-    // Invalidate cache
     leaveRequestsCache = null
-    
     return updatedRequest
   } catch (error) {
     console.error('Failed to update leave request:', error)
@@ -229,10 +255,7 @@ export const updateLeaveRequestStatus = async (
 ): Promise<LeaveRequest> => {
   try {
     const updatedRequest = await leaveRequestsService.updateStatus(id, status, nextApproverId)
-    
-    // Invalidate cache
     leaveRequestsCache = null
-    
     return updatedRequest
   } catch (error) {
     console.error('Failed to update leave request status:', error)
@@ -244,13 +267,10 @@ export const createNotification = async (notification: Omit<Notification, 'id' |
   try {
     const newNotification = await notificationsService.create({
       ...notification,
-      id: `notif${Date.now()}`, // Generate ID
+      id: `notif${Date.now()}`,
       createdAt: new Date()
     })
-    
-    // Invalidate cache
     notificationsCache = null
-    
     return newNotification
   } catch (error) {
     console.error('Failed to create notification:', error)
@@ -262,12 +282,9 @@ export const createLogEntry = async (logEntry: Omit<LogEntry, 'id'>): Promise<Lo
   try {
     const newLogEntry = await logEntriesService.create({
       ...logEntry,
-      id: `log${Date.now()}` // Generate ID
+      id: `log${Date.now()}`
     })
-    
-    // Invalidate cache
     logEntriesCache = null
-    
     return newLogEntry
   } catch (error) {
     console.error('Failed to create log entry:', error)
@@ -275,16 +292,19 @@ export const createLogEntry = async (logEntry: Omit<LogEntry, 'id'>): Promise<Lo
   }
 }
 
-// Keep the static department approval flows for now
-// You might want to move this to database later
+// ==============================
+// 🔹 DEPARTMENT APPROVAL FLOWS
+// ==============================
 export const departmentApprovalFlows: { [key: string]: string[] } = {
-  'hr': ['5', 'admin'], // Fitriani -> Admin
-  'it': ['2', 'admin'], // Citra -> Admin
-  'finance': ['7', 'admin'], // Hana -> Admin
-  'marketing': ['8', 'admin'], // Indra -> Admin
+  'hr': ['5', 'admin'],
+  'it': ['2', 'admin'],
+  'finance': ['7', 'admin'],
+  'marketing': ['8', 'admin']
 }
 
-// Cache management functions
+// ==============================
+// 🔹 CACHE UTILITIES
+// ==============================
 export const refreshCache = () => {
   invalidateCache()
 }
