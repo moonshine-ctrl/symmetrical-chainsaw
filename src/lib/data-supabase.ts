@@ -1,3 +1,5 @@
+// src/lib/data-supabase.ts
+
 import type { User, Department, LeaveType, LeaveRequest, Notification, LogEntry } from '@/types'
 import { 
   usersService, 
@@ -9,7 +11,9 @@ import {
   appSettingsService
 } from './supabase-service'
 
-// Data cache for better performance
+// ==============================
+// 🔹 DATA CACHE
+// ==============================
 let usersCache: User[] | null = null
 let departmentsCache: Department[] | null = null
 let leaveTypesCache: LeaveType[] | null = null
@@ -17,7 +21,6 @@ let leaveRequestsCache: LeaveRequest[] | null = null
 let notificationsCache: Notification[] | null = null
 let logEntriesCache: LogEntry[] | null = null
 
-// Cache invalidation helper
 const invalidateCache = () => {
   usersCache = null
   departmentsCache = null
@@ -27,7 +30,9 @@ const invalidateCache = () => {
   logEntriesCache = null
 }
 
-// USERS
+// ==============================
+// 🔹 USERS
+// ==============================
 export const getUsers = async (): Promise<User[]> => {
   if (!usersCache) {
     try {
@@ -40,7 +45,7 @@ export const getUsers = async (): Promise<User[]> => {
   return usersCache
 }
 
-export const users: Promise<User[]> = getUsers() // Keep for backward compatibility
+export const users: Promise<User[]> = getUsers()
 
 export const getUserById = async (id: string): Promise<User | undefined> => {
   const users = await getUsers()
@@ -52,7 +57,9 @@ export const getUserByNip = async (nip: string): Promise<User | undefined> => {
   return users.find(user => user.nip === nip)
 }
 
-// DEPARTMENTS
+// ==============================
+// 🔹 DEPARTMENTS
+// ==============================
 export const getDepartments = async (): Promise<Department[]> => {
   if (!departmentsCache) {
     try {
@@ -65,9 +72,17 @@ export const getDepartments = async (): Promise<Department[]> => {
   return departmentsCache
 }
 
-export const departments: Promise<Department[]> = getDepartments() // Keep for backward compatibility
+export const departments: Promise<Department[]> = getDepartments()
 
-// LEAVE TYPES
+// ✅ Tambahan untuk kompatibilitas
+export const getDepartmentById = async (id: string): Promise<Department | undefined> => {
+  const departments = await getDepartments()
+  return departments.find(dep => dep.id === id)
+}
+
+// ==============================
+// 🔹 LEAVE TYPES
+// ==============================
 export const getLeaveTypes = async (): Promise<LeaveType[]> => {
   if (!leaveTypesCache) {
     try {
@@ -80,9 +95,17 @@ export const getLeaveTypes = async (): Promise<LeaveType[]> => {
   return leaveTypesCache
 }
 
-export const leaveTypes: Promise<LeaveType[]> = getLeaveTypes() // Keep for backward compatibility
+export const leaveTypes: Promise<LeaveType[]> = getLeaveTypes()
 
-// APP SETTINGS
+// ✅ Tambahan untuk kompatibilitas
+export const getLeaveTypeById = async (id: string): Promise<LeaveType | undefined> => {
+  const leaveTypes = await getLeaveTypes()
+  return leaveTypes.find(type => type.id === id)
+}
+
+// ==============================
+// 🔹 APP SETTINGS
+// ==============================
 export const getAppSettings = async () => {
   try {
     return await appSettingsService.getSettings()
@@ -109,7 +132,20 @@ export const updateAppSettings = async (settings: any) => {
   }
 }
 
-// LEAVE REQUESTS
+// ✅ Fallback static settings (untuk kompatibilitas kode lama)
+export const settings = {
+  id: 'global',
+  logoUrl: '/logo.png',
+  companyName: 'Leave Management System',
+  letterhead: ['Company Name'],
+  sickLeaveFormUrl: '',
+  contactInfo: {},
+  themeConfig: {}
+}
+
+// ==============================
+// 🔹 LEAVE REQUESTS
+// ==============================
 export const getLeaveRequests = async (): Promise<LeaveRequest[]> => {
   if (!leaveRequestsCache) {
     try {
@@ -122,54 +158,7 @@ export const getLeaveRequests = async (): Promise<LeaveRequest[]> => {
   return leaveRequestsCache
 }
 
-export const leaveRequests: Promise<LeaveRequest[]> = getLeaveRequests() // Keep for backward compatibility
-
-// NOTIFICATIONS
-export const getNotificationsByUser = async (userId: string): Promise<Notification[]> => {
-  if (!notificationsCache) {
-    try {
-      const allNotifications = await notificationsService.getByUser(userId)
-      notificationsCache = allNotifications
-      return allNotifications
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error)
-      return []
-    }
-  }
-  return notificationsCache.filter(notif => notif.userId === userId)
-}
-
-// LOG ENTRIES
-export const getLogEntries = async (): Promise<LogEntry[]> => {
-  if (!logEntriesCache) {
-    try {
-      logEntriesCache = await logEntriesService.getAll()
-    } catch (error) {
-      console.error('Failed to fetch log entries:', error)
-      logEntriesCache = []
-    }
-  }
-  return logEntriesCache
-}
-
-// Utility functions for easier data manipulation
-export const getUsersByDepartment = async (departmentId: string): Promise<User[]> => {
-  try {
-    return await usersService.getByDepartment(departmentId)
-  } catch (error) {
-    console.error('Failed to fetch users by department:', error)
-    return []
-  }
-}
-
-export const getUsersByRole = async (role: 'Admin' | 'Employee'): Promise<User[]> => {
-  try {
-    return await usersService.getByRole(role)
-  } catch (error) {
-    console.error('Failed to fetch users by role:', error)
-    return []
-  }
-}
+export const leaveRequests: Promise<LeaveRequest[]> = getLeaveRequests()
 
 export const getLeaveRequestsByUser = async (userId: string): Promise<LeaveRequest[]> => {
   try {
@@ -189,18 +178,61 @@ export const getPendingApprovals = async (approverId: string): Promise<LeaveRequ
   }
 }
 
-// Data manipulation functions
+// ==============================
+// 🔹 NOTIFICATIONS
+// ==============================
+export const getNotificationsByUser = async (userId: string): Promise<Notification[]> => {
+  if (!notificationsCache) {
+    try {
+      const allNotifications = await notificationsService.getByUser(userId)
+      notificationsCache = allNotifications
+      return allNotifications
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error)
+      return []
+    }
+  }
+  return notificationsCache.filter(notif => notif.userId === userId)
+}
+
+// ✅ Tambahan untuk kompatibilitas
+export const notifications: Notification[] = []
+
+// ==============================
+// 🔹 LOG ENTRIES
+// ==============================
+export const getLogEntries = async (): Promise<LogEntry[]> => {
+  if (!logEntriesCache) {
+    try {
+      logEntriesCache = await logEntriesService.getAll()
+    } catch (error) {
+      console.error('Failed to fetch log entries:', error)
+      logEntriesCache = []
+    }
+  }
+  return logEntriesCache
+}
+
+export const logHistory = async (entry: LogEntry) => {
+  try {
+    await logEntriesService.create(entry)
+    logEntriesCache = null
+  } catch (error) {
+    console.error('Failed to log history:', error)
+  }
+}
+
+// ==============================
+// 🔹 DATA MANIPULATION
+// ==============================
 export const createLeaveRequest = async (request: Omit<LeaveRequest, 'id' | 'createdAt'>): Promise<LeaveRequest> => {
   try {
     const newRequest = await leaveRequestsService.create({
       ...request,
-      id: `req${Date.now()}`, // Generate ID
+      id: `req${Date.now()}`,
       createdAt: new Date()
     })
-    
-    // Invalidate cache
     leaveRequestsCache = null
-    
     return newRequest
   } catch (error) {
     console.error('Failed to create leave request:', error)
@@ -211,10 +243,7 @@ export const createLeaveRequest = async (request: Omit<LeaveRequest, 'id' | 'cre
 export const updateLeaveRequest = async (id: string, updates: Partial<LeaveRequest>): Promise<LeaveRequest> => {
   try {
     const updatedRequest = await leaveRequestsService.update(id, updates)
-    
-    // Invalidate cache
     leaveRequestsCache = null
-    
     return updatedRequest
   } catch (error) {
     console.error('Failed to update leave request:', error)
@@ -222,72 +251,20 @@ export const updateLeaveRequest = async (id: string, updates: Partial<LeaveReque
   }
 }
 
-export const updateLeaveRequestStatus = async (
-  id: string, 
-  status: LeaveRequest['status'], 
-  nextApproverId?: string
-): Promise<LeaveRequest> => {
-  try {
-    const updatedRequest = await leaveRequestsService.updateStatus(id, status, nextApproverId)
-    
-    // Invalidate cache
-    leaveRequestsCache = null
-    
-    return updatedRequest
-  } catch (error) {
-    console.error('Failed to update leave request status:', error)
-    throw error
-  }
-}
-
-export const createNotification = async (notification: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification> => {
-  try {
-    const newNotification = await notificationsService.create({
-      ...notification,
-      id: `notif${Date.now()}`, // Generate ID
-      createdAt: new Date()
-    })
-    
-    // Invalidate cache
-    notificationsCache = null
-    
-    return newNotification
-  } catch (error) {
-    console.error('Failed to create notification:', error)
-    throw error
-  }
-}
-
-export const createLogEntry = async (logEntry: Omit<LogEntry, 'id'>): Promise<LogEntry> => {
-  try {
-    const newLogEntry = await logEntriesService.create({
-      ...logEntry,
-      id: `log${Date.now()}` // Generate ID
-    })
-    
-    // Invalidate cache
-    logEntriesCache = null
-    
-    return newLogEntry
-  } catch (error) {
-    console.error('Failed to create log entry:', error)
-    throw error
-  }
-}
-
-// Keep the static department approval flows for now
-// You might want to move this to database later
+// ==============================
+// 🔹 DEPARTMENT APPROVAL FLOWS
+// ==============================
 export const departmentApprovalFlows: { [key: string]: string[] } = {
-  'hr': ['5', 'admin'], // Fitriani -> Admin
-  'it': ['2', 'admin'], // Citra -> Admin
-  'finance': ['7', 'admin'], // Hana -> Admin
-  'marketing': ['8', 'admin'], // Indra -> Admin
+  'hr': ['5', 'admin'],
+  'it': ['2', 'admin'],
+  'finance': ['7', 'admin'],
+  'marketing': ['8', 'admin']
 }
 
-// Cache management functions
-export const refreshCache = () => {
-  invalidateCache()
-}
+// ==============================
+// 🔹 CACHE UTILITIES
+// ==============================
+export const refreshCache = () => invalidateCache()
 
 export const getCacheStatus = () => ({
   users: !!usersCache,
