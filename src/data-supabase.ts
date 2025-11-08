@@ -74,6 +74,12 @@ export const getDepartments = async (): Promise<Department[]> => {
 
 export const departments: Promise<Department[]> = getDepartments()
 
+// ✅ Tambahan untuk kompatibilitas
+export const getDepartmentById = async (id: string): Promise<Department | undefined> => {
+  const departments = await getDepartments()
+  return departments.find(dep => dep.id === id)
+}
+
 // ==============================
 // 🔹 LEAVE TYPES
 // ==============================
@@ -90,6 +96,12 @@ export const getLeaveTypes = async (): Promise<LeaveType[]> => {
 }
 
 export const leaveTypes: Promise<LeaveType[]> = getLeaveTypes()
+
+// ✅ Tambahan untuk kompatibilitas
+export const getLeaveTypeById = async (id: string): Promise<LeaveType | undefined> => {
+  const leaveTypes = await getLeaveTypes()
+  return leaveTypes.find(type => type.id === id)
+}
 
 // ==============================
 // 🔹 APP SETTINGS
@@ -148,6 +160,24 @@ export const getLeaveRequests = async (): Promise<LeaveRequest[]> => {
 
 export const leaveRequests: Promise<LeaveRequest[]> = getLeaveRequests()
 
+export const getLeaveRequestsByUser = async (userId: string): Promise<LeaveRequest[]> => {
+  try {
+    return await leaveRequestsService.getByUser(userId)
+  } catch (error) {
+    console.error('Failed to fetch leave requests by user:', error)
+    return []
+  }
+}
+
+export const getPendingApprovals = async (approverId: string): Promise<LeaveRequest[]> => {
+  try {
+    return await leaveRequestsService.getPendingApprovals(approverId)
+  } catch (error) {
+    console.error('Failed to fetch pending approvals:', error)
+    return []
+  }
+}
+
 // ==============================
 // 🔹 NOTIFICATIONS
 // ==============================
@@ -165,6 +195,9 @@ export const getNotificationsByUser = async (userId: string): Promise<Notificati
   return notificationsCache.filter(notif => notif.userId === userId)
 }
 
+// ✅ Tambahan untuk kompatibilitas
+export const notifications: Notification[] = []
+
 // ==============================
 // 🔹 LOG ENTRIES
 // ==============================
@@ -180,42 +213,12 @@ export const getLogEntries = async (): Promise<LogEntry[]> => {
   return logEntriesCache
 }
 
-// ==============================
-// 🔹 UTILITY FUNCTIONS
-// ==============================
-export const getUsersByDepartment = async (departmentId: string): Promise<User[]> => {
+export const logHistory = async (entry: LogEntry) => {
   try {
-    return await usersService.getByDepartment(departmentId)
+    await logEntriesService.create(entry)
+    logEntriesCache = null
   } catch (error) {
-    console.error('Failed to fetch users by department:', error)
-    return []
-  }
-}
-
-export const getUsersByRole = async (role: 'Admin' | 'Employee'): Promise<User[]> => {
-  try {
-    return await usersService.getByRole(role)
-  } catch (error) {
-    console.error('Failed to fetch users by role:', error)
-    return []
-  }
-}
-
-export const getLeaveRequestsByUser = async (userId: string): Promise<LeaveRequest[]> => {
-  try {
-    return await leaveRequestsService.getByUser(userId)
-  } catch (error) {
-    console.error('Failed to fetch leave requests by user:', error)
-    return []
-  }
-}
-
-export const getPendingApprovals = async (approverId: string): Promise<LeaveRequest[]> => {
-  try {
-    return await leaveRequestsService.getPendingApprovals(approverId)
-  } catch (error) {
-    console.error('Failed to fetch pending approvals:', error)
-    return []
+    console.error('Failed to log history:', error)
   }
 }
 
@@ -248,50 +251,6 @@ export const updateLeaveRequest = async (id: string, updates: Partial<LeaveReque
   }
 }
 
-export const updateLeaveRequestStatus = async (
-  id: string, 
-  status: LeaveRequest['status'], 
-  nextApproverId?: string
-): Promise<LeaveRequest> => {
-  try {
-    const updatedRequest = await leaveRequestsService.updateStatus(id, status, nextApproverId)
-    leaveRequestsCache = null
-    return updatedRequest
-  } catch (error) {
-    console.error('Failed to update leave request status:', error)
-    throw error
-  }
-}
-
-export const createNotification = async (notification: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification> => {
-  try {
-    const newNotification = await notificationsService.create({
-      ...notification,
-      id: `notif${Date.now()}`,
-      createdAt: new Date()
-    })
-    notificationsCache = null
-    return newNotification
-  } catch (error) {
-    console.error('Failed to create notification:', error)
-    throw error
-  }
-}
-
-export const createLogEntry = async (logEntry: Omit<LogEntry, 'id'>): Promise<LogEntry> => {
-  try {
-    const newLogEntry = await logEntriesService.create({
-      ...logEntry,
-      id: `log${Date.now()}`
-    })
-    logEntriesCache = null
-    return newLogEntry
-  } catch (error) {
-    console.error('Failed to create log entry:', error)
-    throw error
-  }
-}
-
 // ==============================
 // 🔹 DEPARTMENT APPROVAL FLOWS
 // ==============================
@@ -305,9 +264,7 @@ export const departmentApprovalFlows: { [key: string]: string[] } = {
 // ==============================
 // 🔹 CACHE UTILITIES
 // ==============================
-export const refreshCache = () => {
-  invalidateCache()
-}
+export const refreshCache = () => invalidateCache()
 
 export const getCacheStatus = () => ({
   users: !!usersCache,
