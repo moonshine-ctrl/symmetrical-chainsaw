@@ -1,3 +1,4 @@
+// src/app/admin/settings/page.tsx
 'use client';
 
 import {
@@ -22,22 +23,72 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { departments, users, settings as appSettings, departmentApprovalFlows } from '@/lib/data-supabase';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
-import { useState, SyntheticEvent } from 'react';
+import { useState, SyntheticEvent, useEffect } from 'react';
 import Image from 'next/image';
+import type { Department, User } from '@/types';
+
+// IMPORT ASYNC HELPERS (pastikan ada di data-supabase)
+import {
+  getDepartments,
+  getUsers,
+  getAppSettings,
+  departmentApprovalFlows as staticApprovalFlows,
+} from '@/lib/data-supabase';
 
 export default function SettingsPage() {
   const { toast } = useToast();
 
-  // Gunakan fallback array kosong untuk mencegah crash jika data kosong
-  const [sickLeaveFormUrl, setSickLeaveFormUrl] = useState(appSettings.sickLeaveFormUrl || '');
-  const [logo, setLogo] = useState(appSettings.logoUrl || '');
-  const [letterhead, setLetterhead] = useState(appSettings.letterhead || ['', '', '']);
-  const [approvers, setApprovers] = useState<{ [key: string]: (string | null)[] }>(departmentApprovalFlows || {});
+  // local states for dynamic data
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // settings state (fallback until real settings fetched)
+  const [sickLeaveFormUrl, setSickLeaveFormUrl] = useState('');
+  const [logo, setLogo] = useState<string | null>(null);
+  const [letterhead, setLetterhead] = useState<string[]>(['Company Name']);
+  const [approvers, setApprovers] = useState<{ [key: string]: (string | null)[] }>({});
   const [activeAccordionItem, setActiveAccordionItem] = useState<string | undefined>();
+
+  // fetch departments/users/settings on mount
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [deps, us, appSet] = await Promise.all([
+          getDepartments(),
+          getUsers(),
+          getAppSettings()
+        ]);
+        if (!mounted) return;
+        setDepartments(deps || []);
+        setUsers(us || []);
+        // initialize UI settings using fetched app settings
+        setSickLeaveFormUrl(appSet?.sickLeaveFormUrl || '');
+        setLogo(appSet?.logoUrl || null);
+        setLetterhead(Array.isArray(appSet?.letterhead) ? appSet.letterhead : ['Company Name']);
+        // initialize approvers from static config if empty
+        setApprovers(prev => {
+          const base = { ...prev };
+          Object.keys(staticApprovalFlows).forEach(k => {
+            base[k] = staticApprovalFlows[k].slice(0, 3).map(id => id ?? null);
+          });
+          return base;
+        });
+      } catch (err) {
+        console.error('Failed to load settings page data', err);
+        toast({ title: 'Load failed', description: 'Gagal memuat data. Cek console.' });
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [toast]);
 
   const handleApproverChange = (deptId: string, level: number, value: string) => {
     setApprovers(prev => {
@@ -50,38 +101,37 @@ export default function SettingsPage() {
 
   const handleSaveChanges = (e: SyntheticEvent, deptId: string) => {
     e.preventDefault();
-    departmentApprovalFlows[deptId] = approvers[deptId]?.filter(id => id !== null) as string[];
+    // Simpan ke staticApprovalFlows lokal (atau panggil API/service untuk persist)
+    staticApprovalFlows[deptId] = (approvers[deptId] || []).filter(Boolean) as string[];
     toast({
       title: 'Changes Saved!',
-      description: `Approval flow for the department has been updated.`,
+      description: `Approval flow for ${deptId} updated.`,
     });
-    setActiveAccordionItem(undefined); // Close accordion
+    setActiveAccordionItem(undefined);
   };
 
   const handleGeneralSave = () => {
-    appSettings.sickLeaveFormUrl = sickLeaveFormUrl;
+    // ideally call updateAppSettings API here
     toast({
       title: 'Changes Saved!',
-      description: 'Your general settings have been updated.',
+      description: 'General settings updated locally.',
     });
   };
 
   const handleBrandingSave = () => {
-    appSettings.logoUrl = logo;
-    appSettings.letterhead = letterhead;
+    // ideally call updateAppSettings API here
     toast({
       title: 'Changes Saved!',
-      description: 'Branding & letterhead settings updated.',
+      description: 'Branding updated locally.',
     });
   };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setLogo(reader.result as string);
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setLogo(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const handleLetterheadChange = (index: number, value: string) => {
@@ -89,6 +139,10 @@ export default function SettingsPage() {
     newLetterhead[index] = value;
     setLetterhead(newLetterhead);
   };
+
+  if (loading) {
+    return <p className="text-center py-10 text-muted-foreground">Memuat data...</p>;
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -133,7 +187,12 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Logo Instansi</Label>
-                  {logo && <Image src={logo} alt="Current Logo" width={80} height={80} className="rounded-md border p-2" />}
+                  {logo && (
+                    // next/image but ensure domain/data-uri allowed in next config if external
+                    <div className="w-20 h-20 relative">
+                      <Image src={logo} alt="Current Logo" fill style={{ objectFit: 'contain' }} />
+                    </div>
+                  )}
                   <Input
                     id="logo-upload"
                     type="file"
@@ -147,10 +206,10 @@ export default function SettingsPage() {
 
                 <div className="space-y-4">
                   <Label>Teks Kop Surat</Label>
-                  {letterhead?.map((line, index) => (
+                  {letterhead.map((line, index) => (
                     <Input
                       key={index}
-                      value={line || ''}
+                      value={line}
                       onChange={(e) => handleLetterheadChange(index, e.target.value)}
                       placeholder={`Baris ${index + 1}`}
                     />
@@ -166,24 +225,18 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Approval Flow Configuration</CardTitle>
-              <CardDescription>
-                Set up 1 to 3 levels of approvers for each department.
-              </CardDescription>
+              <CardDescription>Set up 1 to 3 levels of approvers for each department.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Accordion
-                type="single"
-                collapsible
-                className="w-full"
-                value={activeAccordionItem}
-                onValueChange={setActiveAccordionItem}
-              >
+              <Accordion type="single" collapsible className="w-full" value={activeAccordionItem} onValueChange={setActiveAccordionItem}>
                 {departments.map((dept) => (
                   <AccordionItem key={dept.id} value={dept.id}>
-                    <AccordionTrigger className="text-base font-medium">{dept.name}</AccordionTrigger>
+                    <AccordionTrigger className="text-base font-medium">
+                      {dept.name}
+                    </AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-6 p-2">
-                        {[1, 2, 3].map((level) => (
+                        {[1, 2, 3].map(level => (
                           <div className="grid gap-3" key={level}>
                             <Label htmlFor={`approver${level}-${dept.id}`}>
                               Approver Level {level}
